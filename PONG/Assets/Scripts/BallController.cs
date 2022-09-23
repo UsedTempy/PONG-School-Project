@@ -1,26 +1,40 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
+using UnityEngine.UI;
 using UnityEngine;
 
 public class BallController : MonoBehaviour
 {
     public float MovementSpeed;
     public float MovementIncrement;
+
+    public Text CountDown;
+    private bool isCountingDown = true;
+
+    [SerializeField] ParticleSystem ExplosionParticle = null;
+
     Vector2 BallDirection = new Vector2(1, 1);
 
     // Only runs once at the start before the first frame
     void Start()
     {
-        ResetBall();
-        RandomizeBallDirection();
+        StartCoroutine(StartCountdown());     
     }
 
     // Update function that updates every frame
     void Update()
     {
         // Moves the ball
-        transform.Translate(BallDirection * MovementSpeed * Time.deltaTime);
-        MovementSpeed += MovementIncrement * Time.deltaTime;
+        if (isCountingDown == false)
+        {
+            transform.Translate(BallDirection * MovementSpeed * Time.deltaTime);
+            MovementSpeed += MovementIncrement * Time.deltaTime;
+        } else
+        {
+            transform.position = new Vector2(0, 0);
+        }
+        
     }
 
     private void OnCollisionEnter2D(Collision2D collission)
@@ -51,10 +65,7 @@ public class BallController : MonoBehaviour
 
     private void ResetBall()
     {
-        MovementSpeed = 5f;
-        transform.position = new Vector2(0, 0);
-        
-        RandomizeBallDirection();
+        StartCoroutine(HandleCoolScoreEffect(3));
     }
 
     private void RandomizeBallDirection()
@@ -68,5 +79,45 @@ public class BallController : MonoBehaviour
 
         BallDirection = BallDirection.normalized;
 
+    }
+
+    public IEnumerator HandleCoolScoreEffect(float n)
+    {
+        MovementIncrement = 0;
+        MovementSpeed = 0;
+
+        ExplosionParticle.Play();
+
+        gameObject.GetComponent<TrailRenderer>().enabled = false;
+
+        yield return new WaitForSeconds(n);
+
+        MovementSpeed = 5f;
+        transform.position = new Vector2(0, 0);
+
+        gameObject.GetComponent<TrailRenderer>().enabled = true;
+
+        StartCoroutine(StartCountdown());
+    }
+
+    public IEnumerator StartCountdown()
+    {
+        CountDown.GetComponent<Text>().enabled = true;
+        transform.position = new Vector2(0, 0);
+        isCountingDown = true;
+
+        CountDown.text = "3";
+        yield return new WaitForSeconds(1);
+        CountDown.text = "2";
+        yield return new WaitForSeconds(1);
+        CountDown.text = "1";
+        yield return new WaitForSeconds(1);
+        CountDown.text = "GO!";
+        yield return new WaitForSeconds(1);
+
+        isCountingDown = false;
+        CountDown.GetComponent<Text>().enabled = false;
+
+        RandomizeBallDirection();
     }
 }
