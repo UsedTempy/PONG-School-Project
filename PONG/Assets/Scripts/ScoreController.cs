@@ -15,7 +15,7 @@ public class ScoreController : MonoBehaviour
     public void AddP1Score()
     {
         player1Score++;
-            p1Text.text = "Score: " + player1Score.ToString();
+        p1Text.text = "Score: " + player1Score.ToString();
     }
 
     public void AddP2Score()
